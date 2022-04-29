@@ -51,3 +51,52 @@ wildschwein_BE_distance <- wildschwein_BE_timelag %>%
   mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
   mutate(speed = steplength/timelag)
 #the unit is unit/duration in seconds
+
+##Task 4
+caro <- read_delim("caro60.csv")
+caro_3 <- caro %>% dplyr::filter(row_number() %% 3 == 0)
+caro_6 <- caro %>% dplyr::filter(row_number() %% 6 == 0)
+caro_9 <- caro %>% dplyr::filter(row_number() %% 9 == 0)
+
+caro_calc <- caro %>%
+  group_by(TierID) %>%
+  mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
+  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(speed = steplength/timelag)
+
+caro_3_calc <- caro_3 %>%
+  group_by(TierID) %>%
+  mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
+  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(speed = steplength/timelag)
+
+caro_6_calc <- caro_6 %>%
+  group_by(TierID) %>%
+  mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
+  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(speed = steplength/timelag)
+
+caro_9_calc <- caro_9 %>%
+  group_by(TierID) %>%
+  mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
+  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(speed = steplength/timelag)
+
+ggplot(caro_calc,aes(DatetimeUTC,speed)) + geom_line(color="black") + geom_line(data=caro_3_calc, color="red") +
+  theme_classic() + geom_line(data=caro_6_calc, color="orange") + geom_line(data=caro_9_calc,color="green")
+#Legende krieg ich nicht hin und auch sonst scheint mir die Geschwindigkeit eine seltsame Zahl.
+
+#Interpretation speed differences: with decreasing resolution, speed decreased as timelag between
+#observations increased. Steplength experienced less deviations.
+
+#Trajectories:
+ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_3_calc, color="red") +
+  theme_classic()
+ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_6_calc, color="orange") +
+  theme_classic()
+ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_9_calc, color="green") +
+  theme_classic()
+#Interpretation: sampling reduction decreased accuracy quite a lot. When only using every 6th or 9th observation,
+# the real coordinates were lost on the way to a high degree. Especially observations that show circling around
+#the same spots would not be visible anymore. The information about total range of motion is decreasing as well.
+#The general direction is still recognizable though.
