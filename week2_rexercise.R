@@ -45,3 +45,9 @@ ggplot(wildschwein_BE_timelag,aes(x=DatetimeUTC,y=timelag, col=TierID)) + geom_l
 #They were tracked partially concurrently. First boar was Sabi, starting on 2014-08-22 21:00:12,
 #also finishing last (longest tracking). Then Ruth and Rosa got tracked from the 2014-11-07 18:00:43,
 # lasting until 2015-07-27 09:45:15 and 2015-06-29 23:45:11, respectively.
+
+##Task 3
+wildschwein_BE_distance <- wildschwein_BE_timelag %>%
+  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(speed = steplength/timelag)
+#the unit is unit/duration in seconds
