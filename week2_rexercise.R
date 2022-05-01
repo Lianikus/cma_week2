@@ -64,33 +64,35 @@ caro_9 <- caro %>% dplyr::filter(row_number() %% 9 == 0)
 caro_calc <- caro %>%
   group_by(TierID) %>%
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
-  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(steplength = sqrt(((E-lead(E,1))^2) + ((N-lead(N,1))^2))) %>%
   mutate(speed = steplength/timelag)
 
 caro_3_calc <- caro_3 %>%
   group_by(TierID) %>%
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
-  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(steplength = sqrt(((E-lead(E,1))^2) + ((N-lead(N,1))^2))) %>%
   mutate(speed = steplength/timelag)
 
 caro_6_calc <- caro_6 %>%
   group_by(TierID) %>%
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
-  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(steplength = sqrt(((E-lead(E,1))^2) + ((N-lead(N,1))^2))) %>%
   mutate(speed = steplength/timelag)
 
 caro_9_calc <- caro_9 %>%
   group_by(TierID) %>%
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs"))) %>%
-  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
+  mutate(steplength = sqrt(((E-lead(E,1))^2) + ((N-lead(N,1))^2))) %>%
   mutate(speed = steplength/timelag)
 
 ggplot(caro_calc,aes(DatetimeUTC,speed)) + geom_line(color="black") + geom_line(data=caro_3_calc, color="red") +
-  theme_classic() + geom_line(data=caro_6_calc, color="orange") + geom_line(data=caro_9_calc,color="green")
-#Legende krieg ich nicht hin und auch sonst scheint mir die Geschwindigkeit eine seltsame Zahl.
+  theme_classic() + geom_line(data=caro_6_calc, color="orange") + geom_line(data=caro_9_calc,color="green") +
+  labs(x="Zeitpunkt",y="Speed (m/s)") #+ theme(legend.position="top") + scale_fill_manual(values=c("traj1","traj2","traj3","traj4"))
+#Legende krieg ich nicht hin...
 
-#Interpretation speed differences: with decreasing resolution, speed decreased as timelag between
-#observations increased. Steplength experienced less deviations.
+#Interpretation speed differences:Black shows the "original" dataset whereas the colors depict the lower resolutions.
+#With decreasing resolution, speed maxima and generally the number of speed maxima decreased as timelag between
+#observations increased. Steplength experienced less deviations / losses.
 
 #Trajectories:
 ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_3_calc, color="red") +
@@ -98,8 +100,34 @@ ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_3_ca
 ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_6_calc, color="orange") +
   theme_classic()
 ggplot(caro_calc,aes(E,N)) + geom_path(color="black") + geom_path(data=caro_9_calc, color="green") +
-  theme_classic()
+  theme_classic# + scale_fill_continuous(name="test",labels="bla1","bla2")
+#Legenden funktionieren auch nicht
 #Interpretation: sampling reduction decreased accuracy quite a lot. When only using every 6th or 9th observation,
 # the real coordinates were lost on the way to a high degree. Especially observations that show circling around
 #the same spots would not be visible anymore. The information about total range of motion is decreasing as well.
 #The general direction is still recognizable though.
+
+##Task 5
+install.packages("zoo")
+library(zoo)
+
+example <- rnorm(10)
+par(mfrow=c(1,2))
+plot(example)
+plot(rollmean(example,k = 3,fill = NA,align = "left"))
+
+caro_speed2 <- rollmean(caro_calc$speed,k = 2 ,fill=NA,align = "left")
+caro_speed3 <- rollmean(caro_calc$speed,k=3,fill=NA,align = "left")
+caro_speed7 <- rollmean(caro_calc$speed,k=7,fill=NA,align = "left")
+caro_speed10 <- rollmean(caro_calc$speed,k=10,fill=NA,align = "left")
+
+df <- data.frame(caro_speed2,caro_speed3,caro_speed7,caro_speed10)
+df <- df %>%
+  dplyr::mutate(id=row_number())
+df_pivot <- df %>%
+  tidyr::pivot_longer(-id,names_to="number_of_k",values_to="rolling_mean")
+
+ggplot(df_pivot,aes(y=rolling_mean, x=id, color=number_of_k)) +
+  geom_line() + facet_wrap(vars(number_of_k)) +
+  theme(legend.position="none")
+##rolling mean decreases with increasing window size k
