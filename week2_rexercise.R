@@ -33,7 +33,7 @@ wildschwein_BE_duration <- wildschwein_BE_timelag %>%
   mutate(duration = difftime(max, min,units="days"))
 
 #Rosa has been tracked for 234.6663 days, Ruth for 261.6559 days, Sabi for 338.5834 days.
-ggplot(wildschwein_BE_timelag,aes(y=TierName,x=DatxetimeUTC)) + geom_line()
+ggplot(wildschwein_BE_timelag,aes(y=TierName,x=DatetimeUTC)) + geom_line()
 
 (wildschwein_BE_gaps <- wildschwein_BE_timelag %>%
   filter(timelag > 10000) %>%
@@ -50,9 +50,10 @@ ggplot(wildschwein_BE_timelag,aes(x=DatetimeUTC,y=timelag, col=TierID)) + geom_l
 
 ##Task 3
 wildschwein_BE_distance <- wildschwein_BE_timelag %>%
-  mutate(steplength = sqrt(abs((E-lead(E,1)^2) + (N-lead(N,1)^2)))) %>%
-  mutate(speed = steplength/timelag)
-#the unit is unit/duration in seconds
+  mutate(steplength = sqrt(((E-lead(E,1))^2) + (N-lead(N,1))^2)) %>%
+  mutate("speed_m/s" = steplength/timelag)
+#the unit for the speed is metres/seconds
+
 
 ##Task 4
 caro <- read_delim("caro60.csv")
