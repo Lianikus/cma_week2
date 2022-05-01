@@ -20,9 +20,10 @@ wildschwein_BE_timelag <- wildschwein_BE %>%
   mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC, units="secs")))
 
 ##How many animals were tracked?
+str(wildschwein_BE_timelag)
 head(wildschwein_BE_timelag)
 summary(wildschwein_BE_timelag)
-wildschwein_BE_countAnimals <- wildschwein_BE_timelag %>%
+wildschwein_BE_countObs <- wildschwein_BE_timelag %>%
   group_by(TierName) %>%
   summarise(n=n())
 #3 animals were tracked (Rosa, Ruth, Sabi)
@@ -31,14 +32,15 @@ wildschwein_BE_duration <- wildschwein_BE_timelag %>%
   summarise(min=min(DatetimeUTC),max=max(DatetimeUTC)) %>%
   mutate(duration = difftime(max, min,units="days"))
 
-
 #Rosa has been tracked for 234.6663 days, Ruth for 261.6559 days, Sabi for 338.5834 days.
-wildschwein_BE_gaps <- wildschwein_BE_timelag %>%
+ggplot(wildschwein_BE_timelag,aes(y=TierName,x=DatxetimeUTC)) + geom_line()
+
+(wildschwein_BE_gaps <- wildschwein_BE_timelag %>%
   filter(timelag > 10000) %>%
   group_by(TierID) %>%
-  summarise(n=n())
+  summarise(n=n()))
 
-ggplot(wildschwein_BE_timelag,aes(y=TierName,x=DatetimeUTC)) + geom_line()
+
 ggplot(wildschwein_BE_timelag,aes(x=DatetimeUTC,y=timelag, col=TierID)) + geom_line()
 
 #There have been around 400-500 gaps of more than 10'000 seconds for each boar (ca. 2.7h)
